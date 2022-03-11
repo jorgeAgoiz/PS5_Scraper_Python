@@ -3,9 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import os
-# import smtplib
-# import ssl
-# from email.mime.text import MIMEText
+import smtplib
+import ssl
+from email.mime.text import MIMEText
 
 load_dotenv()
 my_headers = {
@@ -14,20 +14,12 @@ my_headers = {
     "Accept-Language": "es-ES,es;q=0.9,de;q=0.8,en;q=0.7",
     "Accept-Encoding": "gzip, deflate, br"
 }
-print(os.getenv('PRUEBA'))
+
+EMAIL_PASS = os.getenv('EMAIL_PASS')
 
 # To Send Emails
-# sender = ''
-# receiver = ''
-# body_email = ''
-# msg = MIMEText(body_of_email, ‘html’)
-# msg[‘Subject’] = ‘Subject line goes here’
-# msg[‘From’] = sender
-# msg[‘To’] = ‘,’.join(receivers)
-# s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
-# s.login(user = ‘your_username’, password = ‘your_password’)
-# s.sendmail(sender, receivers, msg.as_string())
-# s.quit()
+sender = os.getenv('EMAIL_ACCOUNT')
+receiver = os.getenv('EMAIL_RECIEVER')
 
 # Pages to buy Playstation 5
 
@@ -76,6 +68,7 @@ def stock_eci(soup):
 
 for page in pages:  # Iterate the shop pages
     sleep(1)
+
     try:
         website = requests.get(page["URL"], headers=my_headers)
         soup = BeautifulSoup(website.content, "html5lib")
@@ -86,6 +79,16 @@ for page in pages:  # Iterate the shop pages
             result = stock_game(soup)
         if page["shop"] == "amazon":
             result = stock_amazon(soup)
-        print(result)
+
+        if result:
+            body_email = f'You have stock in {page["shop"]}, click in the url: {page["URL"]}'
+            msg = MIMEText(body_email, 'html')
+            msg['Subject'] = 'STOCK NOTICE'
+            msg['From'] = sender
+            msg['To'] = receiver
+            s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
+            s.login(user=sender, password=EMAIL_PASS)
+            s.sendmail(sender, receiver, msg.as_string())
+            s.quit()
     except:
         print("Something Went Wrong")
