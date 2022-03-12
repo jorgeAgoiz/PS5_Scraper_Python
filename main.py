@@ -81,6 +81,7 @@ for page in pages:  # Iterate the shop pages
             result = stock_amazon(soup)
 
         if result:
+            print("Stock found")
             body_email = f'You have stock in {page["shop"]}, click in the url: {page["URL"]}'
             msg = MIMEText(body_email, 'html')
             msg['Subject'] = 'STOCK NOTICE'
